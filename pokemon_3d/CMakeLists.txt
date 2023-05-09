@@ -29,19 +29,19 @@ set(CMAKE_NINJA_FORCE_RESPONSE_FILE "ON" CACHE BOOL "Force Ninja to use response
 
 include_directories($(CMAKE_CURRENT_SOURCE_DIR)/source)
 
-add_executable(cmake_vtk_main source/main.cpp)
-add_executable(cmake_vtk_readerfile source/ReaderTextFile.cpp)
-add_executable(cmake_vtk_drawregion source/DrawRegion.cpp)
-add_executable(cmake_vtk_drawimage source/DrawImage.cpp)
+add_executable(main source/main.cpp)
+add_executable(readerfile source/ReaderTextFile.cpp)
+add_executable(drawregion source/DrawRegion.cpp)
+add_executable(drawimage source/DrawImage.cpp)
 
-target_link_libraries(cmake_vtk_main PRIVATE ${VTK_LIBRARIES} )
-target_link_libraries(cmake_vtk_readerfile PRIVATE ${VTK_LIBRARIES} )
-target_link_libraries(cmake_vtk_drawregion PRIVATE ${VTK_LIBRARIES} )
-target_link_libraries(cmake_vtk_drawimage PRIVATE ${VTK_LIBRARIES} )
+target_link_libraries(main PRIVATE ${VTK_LIBRARIES} )
+target_link_libraries(readerfile PRIVATE ${VTK_LIBRARIES} )
+target_link_libraries(drawregion PRIVATE ${VTK_LIBRARIES} )
+target_link_libraries(drawimage PRIVATE ${VTK_LIBRARIES} )
 
 # vtk_module_autoinit is needed
 vtk_module_autoinit(
-  TARGETS cmake_vtk_main cmake_vtk_readerfile cmake_vtk_drawregion cmake_vtk_drawimage
+  TARGETS main readerfile drawregion drawimage
   MODULES ${VTK_LIBRARIES}
 )
 
