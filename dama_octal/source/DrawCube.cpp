@@ -107,13 +107,13 @@ class Point {
 public:
     double x, y, z;
     Point(double x = 0, double y = 0, double z = 0) : x(x), y(y), z(z) {}
-    Point operator - (const Point& p) const {
+    Point operator - (Point p) const {
         return Point(x - p.x, y - p.y, z - p.z);
     }
-    Point operator + (const Point& p) const {
+    Point operator + (Point p) const {
         return Point(x + p.x, y + p.y, z + p.z);
     }
-    bool operator == (const Point& p) {
+    bool operator == (Point p) {
         return this->x == p.x && this->y == p.y && this->z == p.z;
     }
     double max_coord() {
@@ -127,14 +127,14 @@ public:
     }
 };
 
-Point getMinPoint(Point &pointA, Point pointB) {
+Point getMinPoint(Point pointA, Point pointB) {
     double x = pointA.x < pointB.x ? pointA.x : pointB.x;
     double y = pointA.y < pointB.y ? pointA.y : pointB.y;
     double z = pointA.z < pointB.z ? pointA.z : pointB.z;
     return Point(x, y, z);
 }
 
-Point getMaxPoint(Point &pointA, Point pointB){
+Point getMaxPoint(Point pointA, Point pointB){
     double x = pointA.x > pointB.x ? pointA.x : pointB.x;
     double y = pointA.y > pointB.y ? pointA.y : pointB.y;
     double z = pointA.z > pointB.z ? pointA.z : pointB.z;
@@ -157,7 +157,7 @@ public:
         isLeaf = true;
     }
 
-    void insert(Point &point) {
+    void insert(Point point) {
         if( isLeaf && nPoints == 0 ){
             points[nPoints++] = point;
             leftBottom = point;
@@ -186,7 +186,7 @@ public:
         }
     }
 
-    void insertTypeOctree(Point &point) {
+    void insertTypeOctree(Point point) {
         Point mid= leftBottom + Point(h/2,h/2,h/2);
         if (point.x < mid.x) {
             if (point.y < mid.y) {
