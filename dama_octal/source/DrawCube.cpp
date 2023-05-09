@@ -106,13 +106,13 @@ vtkNew<vtkActor> drawPoint(double x, double y, double z) {
 struct Point {
     double x, y, z;
     Point(double x = 0, double y = 0, double z = 0) : x(x), y(y), z(z) {}
-    Point operator - (Point &p) const {
+    Point operator - (Point p) const {
         return Point(x - p.x, y - p.y, z - p.z);
     }
-    Point operator + (Point &p) const {
+    Point operator + (Point p) const {
         return Point(x + p.x, y + p.y, z + p.z);
     }
-    bool operator == (Point &p) {
+    bool operator == (Point p) {
         return this->x == p.x && this->y == p.y && this->z == p.z;
     }
     double max_coord() {
@@ -339,13 +339,9 @@ struct Cube{
 
 void loadFile(Octree *octree) {
     double x, y, z;
-    string line;
     ifstream file("dama_octal.txt");
-    while (std::getline(file, line))
-    {
-        std::stringstream linestream;
-        linestream << line;
-        linestream >> x >> y >> z;
+    while (!file.eof()) {
+        file >> x >> y >> z;
         Point a(x, y, z);
         octree->insert(a);
     }
