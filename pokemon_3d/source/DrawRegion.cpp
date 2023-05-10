@@ -97,7 +97,7 @@ class Pokemon{
     float height, hp, weight;
 public:
     Pokemon(int id, string name, float height, float hp, float weight) : id(id), name(name), height(height), hp(hp), weight(weight) {}
-    float getId(){ return id; }
+    int getId(){ return id; }
     float getHeight(){ return height; }
     float getHp(){ return hp; }
     float getWeight(){ return weight; }
