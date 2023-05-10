@@ -16,12 +16,21 @@
 #include <vtkRenderer.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkVertexGlyphFilter.h>
-#include <vtkNamedColors.h>
+
+#include <vtkTexture.h>
+#include <vtkImageViewer.h>
+#include <vtkJPEGReader.h>
+#include <vtkPNGReader.h>
+#include <vtkRegressionTestImage.h>
+#include <vtkSmartPointer.h>
+#include <vtkPlaneSource.h>
+
 #include<string>
 #include<vector>
 #include<cmath>
 #include<fstream>
 #include<sstream>
+#include<string>
 
 using namespace std;
 
@@ -350,8 +359,13 @@ public:
 };
 
 struct Rect3D{
-    Point<3> bottomLeft, upperRight;
-    Rect3D(Point<3> bottomLeft, Point<3> upperRight) : bottomLeft(bottomLeft), upperRight(upperRight) {}
+    Point<3> bottomLeft;
+    float hx, hy, hz;
+    Rect3D(Point<3> bottomLeft, Point<3> upperRight) : bottomLeft(bottomLeft){
+        hx = upperRight[0]-bottomLeft[0];
+        hy = upperRight[1]-bottomLeft[1];
+        hz = upperRight[2]-bottomLeft[2];
+    }
 };
 
 void preOrder(Node<Pokemon, 3>* node, vector<Rect3D> &rects, int level=0){
@@ -376,8 +390,8 @@ void preOrder(Node<Pokemon, 3>* node, vector<Rect3D> &rects, int level=0){
     }
 }
 
-void loadData(RTree<Pokemon, 3> &rtree){
-    ifstream file("test.csv");
+void loadData(RTree<Pokemon, 3> &rtree, vector<Record<Pokemon,3>> &pokemons){
+    ifstream file("pokemon.csv");
     string line, name;
     int id;
     float attack, defense, speed, height, hp, weight;
@@ -389,6 +403,7 @@ void loadData(RTree<Pokemon, 3> &rtree){
         Point<3>* point= new Point<3>(coords);
         Record<Pokemon, 3> *record= new Record<Pokemon, 3>(*pokemon, *point);
         rtree.insert(*record);
+        pokemons.push_back(*record);
     }
     file.close();
 }
@@ -419,12 +434,10 @@ vtkNew<vtkActor> drawRegion( double x, double y, double z, double hx, double hy,
 	pts[5] = {x+hx,y,z+hz};   //1,0,1
 	pts[6] = {x+hx,y+hy,z+hz}; //1,1,1
 	pts[7] = {x,y+hy,z+hz};   //0,1,1
-
 	vtkNew<vtkPolyData> cube;
 	vtkNew<vtkPoints> points;
 	vtkNew<vtkCellArray> polys;
 	vtkNew<vtkFloatArray> scalars;
-
 	for (auto i = 0ul; i < pts.size(); ++i) {
 		points->InsertPoint(i, pts[i].data());
 		scalars->InsertTuple1(i, i);
@@ -432,12 +445,10 @@ vtkNew<vtkActor> drawRegion( double x, double y, double z, double hx, double hy,
 	for (auto&& i : ordering) {
 		polys->InsertNextCell(vtkIdType(i.size()), i.data());
 	}
-
 	// We now assign the pieces to the vtkPolyData.
 	cube->SetPoints(points);
 	cube->SetPolys(polys);
 	cube->GetPointData()->SetScalars(scalars);
-
 	// Now we'll look at it.
 	vtkNew<vtkPolyDataMapper> cubeMapper;
 	cubeMapper->SetInputData(cube);
@@ -445,48 +456,37 @@ vtkNew<vtkActor> drawRegion( double x, double y, double z, double hx, double hy,
 	vtkNew<vtkActor> cubeActor;
 	cubeActor->SetMapper(cubeMapper);
 	cubeActor->GetProperty()->SetRepresentationToWireframe();
-
 	return cubeActor;
 }
 
-vtkNew<vtkActor> drawPoint(double x, double y, double z) {
-	vtkNew<vtkNamedColors> namedColors;
-
-	vtkNew<vtkPoints> points;
-	points->InsertNextPoint(x, y, z);
-
-	vtkNew<vtkPolyData> pointsPolydata;
-	pointsPolydata->SetPoints(points);
-
-
-	vtkNew<vtkPolyData> polyData;
-
-  polyData->SetPoints(points);
-
-  vtkNew<vtkVertexGlyphFilter> glyphFilter;
-  glyphFilter->SetInputData(polyData);
-  glyphFilter->Update();
-	
-
-  
-	// Visualization
-	
-	vtkNew<vtkPolyDataMapper> mapper;
-	mapper->SetInputConnection(glyphFilter->GetOutputPort());
-
-	vtkNew<vtkActor> actor;
-	actor->SetMapper(mapper);
-	actor->GetProperty()->SetPointSize(10);
-	actor->GetProperty()->SetColor(namedColors->GetColor3d("Olive").GetData());
-
-	return actor;
+vtkNew<vtkActor> drawFigure( const string &filename, double x, double y, double z, double hx, double hy){
+    vtkNew<vtkPNGReader> PNGReader;
+    PNGReader->SetFileName(filename.c_str());
+    PNGReader->Update();
+    // objeto textura
+    vtkNew<vtkTexture> texture;
+    texture->SetInputConnection(PNGReader->GetOutputPort());
+    // objeto plano
+    vtkNew<vtkPlaneSource> planeSource;
+    planeSource->SetOrigin(0, 0, 0);
+    planeSource->SetPoint1(hx,0,0);
+    planeSource->SetPoint2(0,hy,0);
+    planeSource->SetCenter(x, y, z);
+    planeSource->Update();
+    // mapea y asigna textura
+    vtkNew<vtkPolyDataMapper> mapper;
+    mapper->SetInputConnection(planeSource->GetOutputPort());
+    vtkNew<vtkActor> actor;
+    actor->SetMapper(mapper);
+    actor->SetTexture(texture);
+    return actor;
 }
-
 
 int main(int argc, char **argv)
 {
     RTree <Pokemon, 3> rtree(22);//21 minimo
-    loadData(rtree);
+    vector<Record<Pokemon, 3>> pokemons;
+    loadData(rtree, pokemons);
     vector<Rect3D> rects = rtreeToRect(rtree);
     
     vtkNew<vtkNamedColors> colors;
@@ -505,11 +505,17 @@ int main(int argc, char **argv)
     iren->SetRenderWindow(renWin);
 
     for (auto rect : rects){
-        renderer->AddActor(drawRegion(rect.bottomLeft[0], rect.bottomLeft[1], rect.bottomLeft[2], 
-                                    rect.upperRight[0]-rect.bottomLeft[0], rect.upperRight[1]-rect.bottomLeft[1], rect.upperRight[2]-rect.bottomLeft[2]));
+        vtkNew<vtkActor> actor = drawRegion(rect.bottomLeft[0], rect.bottomLeft[1], rect.bottomLeft[2], rect.hx, rect.hy, rect.hz);
+        renderer->AddActor(actor);
     }
 
-    renderer->AddActor(drawPoint(0.5,0.5,0.5));
+    for (auto pokemon : pokemons){
+        vtkNew<vtkActor> image = drawFigure( "pokemon_png/" + to_string(pokemon.getObject().getId())+".png", 
+                                              pokemon.getPoint()[0], pokemon.getPoint()[1], pokemon.getPoint()[2], 
+                                              pokemon.getObject().getHeight(), pokemon.getObject().getWeight() );
+        renderer->AddActor(image); 
+    }
+
     renderer->SetActiveCamera(camera);
     renderer->ResetCamera();
     renderer->SetBackground(colors->GetColor3d("Cornsilk").GetData());

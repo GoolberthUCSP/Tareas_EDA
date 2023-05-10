@@ -19,35 +19,26 @@ using namespace std;
 vtkNew<vtkActor> drawFigure( const string &filename,
                              double x, double y, double z, 
                              double hx, double hy){
-
   vtkNew<vtkPNGReader> PNGReader;
   PNGReader->SetFileName(filename.c_str());
   PNGReader->Update();
-
   // objeto textura
   vtkNew<vtkTexture> texture;
   texture->SetInputConnection(PNGReader->GetOutputPort());
-  
-
   // objeto plano
   vtkNew<vtkPlaneSource> planeSource;
   planeSource->SetOrigin(0, 0, 0);
   planeSource->SetPoint1(hx,0,0);
   planeSource->SetPoint2(0,hy,0);
   planeSource->SetCenter(x, y, z);
-  
   planeSource->Update();
-
   // mapea y asigna textura
   vtkNew<vtkPolyDataMapper> mapper;
   mapper->SetInputConnection(planeSource->GetOutputPort());
-
   vtkNew<vtkActor> actor;
   actor->SetMapper(mapper);
   actor->SetTexture(texture);
-
   return actor;
-
 }
 
 
