@@ -19,6 +19,9 @@
 #include <vtkNamedColors.h>
 #include<string>
 #include<vector>
+#include<cmath>
+#include<fstream>
+#include<sstream>
 
 using namespace std;
 
@@ -62,6 +65,18 @@ struct Point{
             distance+= pow(coords[i]-point[i], 2);
         }
         return sqrt(distance);
+    }
+
+    friend ostream& operator<<(ostream &os, Point<ndim> &point){
+        os << "(";
+        for (int i = 0; i < ndim; i++){
+            os << point[i];
+            if (i != ndim-1){
+                os << ", ";
+            }
+        }
+        os << ")";
+        return os;
     }
 
 };
@@ -129,9 +144,10 @@ public:
         if (isLeaf){
             return this;
         }
+        //Actualizar el rango del mejor hijo para insertar
         float minExpansion = children[0]->getExpansion(record);
         int bestIndex = 0;
-        for (int i = 1; i < children.size(); i++){
+        for (int i = 1; i < (int)children.size(); i++){
             float expansion = children[i]->getExpansion(record);
             if (expansion < minExpansion){
                 minExpansion = expansion;
@@ -143,6 +159,8 @@ public:
                 }
             }
         }
+        children[bestIndex]->getBottomLeft() = children[bestIndex]->getBottomLeft().getCoords(record.getPoint(), min);
+        children[bestIndex]->getUpperRight() = children[bestIndex]->getUpperRight().getCoords(record.getPoint(), max);
         return children[bestIndex]->chooseLeaf(record);
     }
 
@@ -162,22 +180,20 @@ public:
                     Node<T,ndim>* node = splitLeaf();
                     parent = new Node<T,ndim>(maxRecords, NULL, false);
                     parent->insert(node);
+                    parent->insert(this);
                     return parent;
                 }
-                else{
-                    return this;
-                }
+                return this;
             }
             else{
-                if ( children.size() > maxRecords ){
+                if ( (int)children.size() > maxRecords ){
                     Node<T,ndim>* node = split();
                     parent = new Node<T,ndim>(maxRecords, NULL, false);
                     parent->insert(node);
+                    parent->insert(this);
                     return parent;
                 }
-                else{
-                    return this;
-                }
+                return this;
             }
         }
         else{
@@ -188,7 +204,7 @@ public:
                 parent->insert(node);
             }
             else{//Nodo intermedio
-                if ( children.size() > maxRecords ){
+                if ( (int)children.size() > maxRecords ){
                     //Si necesita dividirse, se llama a split
                     Node<T,ndim>* node = split();
                     parent->insert(node);
@@ -211,6 +227,7 @@ public:
     Point<ndim> &getUpperRight(){ return upperRight; }
     bool getIsLeaf(){ return isLeaf; }
     vector< Node<T,ndim>* > &getChildren(){ return children; }
+    int getNRecords(){ return nRecords; }
 
     float getExpansion(Record<T,ndim>  &record){
         //Retorna el espacio que se expandiria si se insertara el record, 
@@ -253,10 +270,11 @@ public:
     Node<T,ndim>* splitLeaf(){
         //Reparte los records en 2 nodos, sobreescribe el actual y crea un nuevo nodo y lo retorna
         //Se inicializa el nuevo nodo hoja con el mismo padre que el nodo actual
-        Node<T,ndim>* node = new Node<T,ndim>(maxRecords, this->parent); //Insertar la mitad de records más cercanos a botLeft
+        Node<T,ndim>* node = new Node<T,ndim>(maxRecords, parent); //Insertar la mitad de records más cercanos a botLeft
         vector< Record<T,ndim> > recCopy(records); //Copia de los records original
         Point<ndim> botLeft= bottomLeft, upRight= upperRight; //Copia de los rangos
         records.clear(); //Se reinician los records del nodo actual
+        nRecords = 0;
         //Se insertará los records más cercanos a los extremos de los nodos bottomLeft(node) y upperRight(this)
         int middle= (maxRecords+1)/2;
         //Insertar a los más cercanos a los extremos de los nodos bottomLeft y upperRight
@@ -281,11 +299,10 @@ public:
 
     Node<T, ndim>* split(){
         //Reparte los nodos en 2 nodos, sobreescribe el actual y crea un nuevo nodo y lo retorna
-        Node<T,ndim>* node= new Node<T, ndim>(maxRecords, this->parent, false);//Se crea un nodo intermedio en el mismo nivel que el nodo actual
+        Node<T,ndim>* node= new Node<T, ndim>(maxRecords, parent, false);//Se crea un nodo intermedio en el mismo nivel que el nodo actual
         vector< Node<T,ndim>* > childCopy(children); //Copia de la lista de records original
         Point<ndim> botLeft= bottomLeft, upRight= upperRight; //Copia de los rangos
-        children.clear();
-        node = new Node<T,ndim>(maxRecords); //Insertar la mitad de records más cercanos a botLeft
+        children= vector< Node<T,ndim>* >(); //Se reinician los records del nodo actual
         //upperRight= this
         int middle= (maxRecords+1)/2;
         //Insertar a los más cercanos a los extremos de los nodos bottomLeft y upperRight
@@ -296,7 +313,6 @@ public:
                 //Se calcula la distancia euclidiana de los puntos medios de los nodos a los extremos del nodo original
                 if (child->getPoint().euclideanDistance(botLeft) < child->getPoint().euclideanDistance(upRight)){
                     node->insert(child);
-                    child->setParent(node);
                 }
                 else this->insert(child);
             }
@@ -305,7 +321,6 @@ public:
             }
             else{
                 node->insert(child);
-                child->setParent(node);
             }
         }
         return node;
@@ -339,33 +354,30 @@ struct Rect3D{
     Rect3D(Point<3> bottomLeft, Point<3> upperRight) : bottomLeft(bottomLeft), upperRight(upperRight) {}
 };
 
-void preOrder(Node<Pokemon, 3>* node, vector<Rect3D> &rects){
+void preOrder(Node<Pokemon, 3>* node, vector<Rect3D> &rects, int level=0){
     rects.push_back(Rect3D(node->getBottomLeft(), node->getUpperRight()));
+    //Imprimir bottomLeft y upperRight
+    /*
+    cout << node->getBottomLeft() << " " << node->getUpperRight() << " " << level;
+    if (node->getIsLeaf()){
+        cout << " Leaf " << node->getNRecords() << endl;
+    }
+    else{
+        cout << " Mid " << node->getChildren().size() << endl;
+    }
+    */
     if (node->getIsLeaf()){
         return;
     }
     else{
         for (auto child: node->getChildren()){
-            preOrder(child, rects);
+            preOrder(child, rects, level+1);
         }
     }
 }
-vector<Rect3D> rtreeToRect(RTree<Pokemon, 3> &rtree){
-    //Recorrido preorder
-    vector<Rect3D> rects;
-    Node<Pokemon, 3>* node = rtree.getRoot();
-    preOrder(node, rects);
-    return rects;
-}
-
-//1 Bulbasaur 49 49 45 0.7 4.5 5.6
-//2 Ivysaur 62 63 60 1 6 7.1
-//Pokemon 0 1 5 6 7
-//Point 2 3 4
-//Record <Pokemon, 3>
 
 void loadData(RTree<Pokemon, 3> &rtree){
-    ifstream file("../pokemon.csv");
+    ifstream file("test.csv");
     string line, name;
     int id;
     float attack, defense, speed, height, hp, weight;
@@ -379,6 +391,14 @@ void loadData(RTree<Pokemon, 3> &rtree){
         rtree.insert(*record);
     }
     file.close();
+}
+
+vector<Rect3D> rtreeToRect(RTree<Pokemon, 3> &rtree){
+    //Recorrido preorder
+    vector<Rect3D> rects;
+    Node<Pokemon, 3>* node = rtree.getRoot();
+    preOrder(node, rects);
+    return rects;
 }
 
   // The ordering of the corner points on each face.
@@ -465,9 +485,10 @@ vtkNew<vtkActor> drawPoint(double x, double y, double z) {
 
 int main(int argc, char **argv)
 {
-    RTree <Pokemon, 3> rtree(20);
+    RTree <Pokemon, 3> rtree(22);//21 minimo
     loadData(rtree);
     vector<Rect3D> rects = rtreeToRect(rtree);
+    
     vtkNew<vtkNamedColors> colors;
 
     // The usual rendering stuff.
