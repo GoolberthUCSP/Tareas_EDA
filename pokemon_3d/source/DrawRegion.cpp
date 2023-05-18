@@ -234,6 +234,8 @@ public:
 
     Point<ndim> &getBottomLeft(){ return bottomLeft; }
     Point<ndim> &getUpperRight(){ return upperRight; }
+    Point<ndim> getUpRight(){ return upperRight; }
+    Point<ndim> getBotLeft(){ return bottomLeft; }
     bool getIsLeaf(){ return isLeaf; }
     vector< Node<T,ndim>* > &getChildren(){ return children; }
     int getNRecords(){ return nRecords; }
@@ -262,18 +264,19 @@ public:
     //Es necesario para actualizar el padre de los nodos hijos que se crean al dividir un nodo
     void setParent(Node<T,ndim>* parent_){ parent = parent_; }
 
-    void insert(Node<T,ndim>* node){
+    bool insert(Node<T,ndim>* node){
         //Funcion para insertar nodos dentro de un nodo intermedio, se usa cuando algún hijo se divide
         children.push_back(node);
         node->setParent(this);
         if (children.size() == 1){
-            bottomLeft = node->getBottomLeft();
-            upperRight = node->getUpperRight();
+            bottomLeft = node->getBotLeft();
+            upperRight = node->getUpRight();
         }
-        else{
+        else if (children.size() >= 2){
             bottomLeft = bottomLeft.getCoords(node->getPoint(), min);
             upperRight = upperRight.getCoords(node->getPoint(), max);
         }
+        return children.size()<=maxRecords;
     }
 
     Node<T,ndim>* splitLeaf(){
@@ -311,7 +314,7 @@ public:
         Node<T,ndim>* node= new Node<T, ndim>(maxRecords, parent, false);//Se crea un nodo intermedio en el mismo nivel que el nodo actual
         vector< Node<T,ndim>* > childCopy(children); //Copia de la lista de records original
         Point<ndim> botLeft= bottomLeft, upRight= upperRight; //Copia de los rangos
-        children= vector< Node<T,ndim>* >(); //Se reinician los records del nodo actual
+        children.clear() //Se reinician los records del nodo actual
         //upperRight= this
         int middle= (maxRecords+1)/2;
         //Insertar a los más cercanos a los extremos de los nodos bottomLeft y upperRight
