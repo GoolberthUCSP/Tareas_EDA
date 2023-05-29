@@ -23,9 +23,9 @@ void load(string filename, vector<point> &points){
 
 int main(){
     vector<point> points;
-    load("puntos.txt", points);
+    load("../puntos_5_bloques.txt", points);
     cout << "size: " << points.size() << endl;
-    k_means kmeans(points, 2);
+    k_means_parallel kmeans(points, 5);
     vector<point> solution= kmeans.get_solution();
     for (auto i: solution){
         cout << i << endl;

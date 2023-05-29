@@ -3,12 +3,13 @@
 #include<cmath>
 #include<random>
 #include<time.h>
+#include<mutex>
 #define N_TH std::thread::hardware_concurrency()
-#define N_ITER 10000
+#define N_ITER 500
 
 using namespace std;
 
-
+mutex mtx;
 
 struct point{
     point(double x= 0, double y= 0){
@@ -61,7 +62,9 @@ public:
                     min_index = j;
                 }
             }
+            mtx.lock();
             clusters[min_index].push_back(points[i]);
+            mtx.unlock();
         }
     }
     void calc_centroid(int index){
@@ -73,6 +76,9 @@ public:
     }
     vector<point> &get_solution(){
         return centroids;
+    }
+    vector<vector<point>> &get_clusters(){
+        return clusters;
     }
 protected:
     vector<point> points;
@@ -126,10 +132,10 @@ public:
             //Guardar centroides anteriores
             vector<point> old_centroids = centroids;
             //Asignar puntos a clusters
-            for(int i = 0; i < N_TH; i++){
-                threads.push_back(thread(&k_means_parallel::assign_to_clusters, this, i * points.size() / N_TH, (i + 1) * points.size() / N_TH));
+            for(int i = 0; i < k; i++){
+                threads.push_back(thread(&k_means_parallel::assign_to_clusters, this, i * points.size() / k, (i + 1) * points.size() / k));
             }
-            for(int i = 0; i < N_TH; i++){
+            for(int i = 0; i < k; i++){
                 threads[i].join();
             }
             //Liberar threads
