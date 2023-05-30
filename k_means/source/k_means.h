@@ -29,7 +29,7 @@ struct point{
         return x != other.x || y != other.y;
     }
     friend ostream& operator<<(ostream& os, const point& p){
-        os << '(' << p.x << ';' << p.y << ')';
+        os <<  p.x << ',' << p.y;
         return os;
     }
     double x, y;
@@ -80,11 +80,15 @@ public:
     vector<vector<point>> &get_clusters(){
         return clusters;
     }
+    double get_time(){
+        return solved_time;
+    }
 protected:
     vector<point> points;
     vector<vector<point>> clusters;
     vector<point> centroids;
     int k;
+    double solved_time;
 };
 
 class k_means: public parent{
@@ -93,6 +97,8 @@ public:
         this->solve();
     }
     void solve(int iterations = N_ITER){
+        time_t start, end;
+        start = clock();
         for(int it = 0; it < iterations; it++){
             clusters.clear();
             clusters.resize(k);
@@ -116,6 +122,8 @@ public:
                 break;
             }
         }
+        end = clock();
+        solved_time = double(end - start) / CLOCKS_PER_SEC;
     }
 };
 
@@ -125,6 +133,8 @@ public:
         this->solve();
     }
     void solve(int iterations = N_ITER){
+        time_t start, end;
+        start = clock();
         vector<thread> threads;
         for(int it = 0; it < iterations; it++){
             clusters.clear();
@@ -160,5 +170,7 @@ public:
                 break;
             }
         }
+        end = clock();
+        solved_time = double(end - start) / CLOCKS_PER_SEC;
     }
 };

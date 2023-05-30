@@ -1,27 +1,34 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
+import os
 
 # 2 casos: k=2 y k=5
-# Ambos casos ejecución paralela y secuencial
-# 4 gráficos comparando los 4 casos
-# Ficheros: k2_secuencial.csv, k2_paralelo.csv, k5_secuencial.csv, k5_paralelo.csv
+# 2 gráficos: k=2 y k=5
+# Archivos: k2.csv, k5.csv
 # Columnas: x, y, cluster
 
-# Cargar datos
-k2_secuencial = pd.read_csv('k2_secuencial.csv')
-k2_paralelo = pd.read_csv('k2_paralelo.csv')
-k5_secuencial = pd.read_csv('k5_secuencial.csv')
-k5_paralelo = pd.read_csv('k5_paralelo.csv')
+# Obtener directorios
+dir_k2= os.getcwd() + "\Tareas_EDA\k_means\data\k2.csv"
+dir_k5= os.getcwd() + "\Tareas_EDA\k_means\data\k5.csv"
 
-# Gráficos
-fig, axs = plt.subplots(2, 2)
-fig.suptitle('Comparación de ejecución secuencial y paralela')
-axs[0, 0].scatter(k2_secuencial['x'], k2_secuencial['y'], c=k2_secuencial['cluster'])
-axs[0, 0].set_title('k=2, secuencial')
-axs[0, 1].scatter(k2_paralelo['x'], k2_paralelo['y'], c=k2_paralelo['cluster'])
-axs[0, 1].set_title('k=2, paralelo')
-axs[1, 0].scatter(k5_secuencial['x'], k5_secuencial['y'], c=k5_secuencial['cluster'])
-axs[1, 0].set_title('k=5, secuencial')
-axs[1, 1].scatter(k5_paralelo['x'], k5_paralelo['y'], c=k5_paralelo['cluster'])
-axs[1, 1].set_title('k=5, paralelo')
+# Cargar datos
+k2 = pd.read_csv(dir_k2)
+k5 = pd.read_csv(dir_k5)
+
+# Graficar k=2 y k=5 en 2 gráficos distintos, cada linea tiene x y cluster, cada cluster tiene un color
+figure, axes = plt.subplots(1, 2, figsize=(10, 5))
+axes[0].set_title("K=2")
+axes[1].set_title("K=5")
+axes[0].set_xlabel("X")
+axes[1].set_xlabel("X")
+axes[0].set_ylabel("Y")
+axes[1].set_ylabel("Y")
+# Disminuir tamaño de puntos
+axes[0].scatter(k2['x'], k2['y'], c=k2['cluster'], cmap='rainbow', s=1)
+axes[1].scatter(k5['x'], k5['y'], c=k5['cluster'], cmap='rainbow', s=1)
+plt.show()
+
+# Borrar ficheros temporales
+os.remove(dir_k2)
+os.remove(dir_k5)
