@@ -4,8 +4,7 @@
 #include<random>
 #include<time.h>
 #include<mutex>
-#define N_TH std::thread::hardware_concurrency()
-#define N_ITER 500
+#define N_ITER 100
 
 using namespace std;
 
@@ -41,7 +40,6 @@ public:
         srand(time(NULL));
         this->points = points;
         this->k = k;
-        this->clusters.resize(k);
         this->centroids.resize(k);
         this->create_centroids();
     }
@@ -100,8 +98,8 @@ public:
         time_t start, end;
         start = clock();
         for(int it = 0; it < iterations; it++){
-            clusters.clear();
-            clusters.resize(k);
+            //Limpiar clusters
+            clusters.assign(k, vector<point>());
             //Guardar centroides anteriores
             vector<point> old_centroids = centroids;
             //Asignar puntos a clusters
@@ -137,14 +135,17 @@ public:
         start = clock();
         vector<thread> threads;
         for(int it = 0; it < iterations; it++){
-            clusters.clear();
-            clusters.resize(k);
+            //Limpiar clusters
+            clusters.assign(k, vector<point>());
             //Guardar centroides anteriores
             vector<point> old_centroids = centroids;
             //Asignar puntos a clusters
-            for(int i = 0; i < k; i++){
-                threads.push_back(thread(&k_means_parallel::assign_to_clusters, this, i * points.size() / k, (i + 1) * points.size() / k));
+            int sub_size = points.size() / k;
+            int i=0;
+            for(; i < (k-1); i++){
+                threads.push_back(thread(&k_means_parallel::assign_to_clusters, this, i * sub_size, (i + 1) * sub_size));
             }
+            threads.push_back(thread(&k_means_parallel::assign_to_clusters, this, i * sub_size, points.size()));
             for(int i = 0; i < k; i++){
                 threads[i].join();
             }

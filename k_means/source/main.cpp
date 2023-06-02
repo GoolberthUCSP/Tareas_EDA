@@ -33,7 +33,7 @@ void save(vector<vector<point>> &clusters, string filename){
 
 int main(){
     vector<point> points;
-    
+    /*
     string filenames[] = {"../data/puntos_2_bloques.txt", "../data/puntos_5_bloques.txt"};
     string out_filenames[] = {"../data/k2.csv", "../data/k5.csv"};
     int ks[] = {2, 5};
@@ -49,8 +49,8 @@ int main(){
         cout << "Parallel time: " << kmeans_parallel.get_time() << endl;
         points.clear();
     }
+    */
     
-    /*
     int ks[] = {2, 5, 10, 20, 50, 100};
     for(int i = 0; i < 6; i++){
         string filename = "../data/puntos_" +  to_string(ks[i]) + "_bloques.txt";
@@ -62,5 +62,5 @@ int main(){
         cout << kmeans_parallel.get_time() << endl;
         points.clear();
     }
-    */
+    
 }
