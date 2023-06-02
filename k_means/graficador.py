@@ -7,28 +7,34 @@ import os
 # 2 gráficos: k=2 y k=5
 # Archivos: k2.csv, k5.csv
 # Columnas: x, y, cluster
+#data= [2, 5, 10, 20, 50, 100]
+data= [2, 5]
+row= 1
+col= 2
 
 # Obtener directorios
-dir_k2= os.getcwd() + "\Tareas_EDA\k_means\data\k2.csv"
-dir_k5= os.getcwd() + "\Tareas_EDA\k_means\data\k5.csv"
+absolutepath = os.path.abspath(__file__)
+absolutepath= os.path.dirname(absolutepath)
+dir= os.path.join(absolutepath, "data")
+dirs= [os.path.join(dir, f"k{i}.csv") for i in data]
 
 # Cargar datos
-k2 = pd.read_csv(dir_k2)
-k5 = pd.read_csv(dir_k5)
+csvs= [pd.read_csv(dir) for dir in dirs]
 
 # Graficar k=2 y k=5 en 2 gráficos distintos, cada linea tiene x y cluster, cada cluster tiene un color
-figure, axes = plt.subplots(1, 2, figsize=(10, 5))
-axes[0].set_title("K=2")
-axes[1].set_title("K=5")
-axes[0].set_xlabel("X")
-axes[1].set_xlabel("X")
-axes[0].set_ylabel("Y")
-axes[1].set_ylabel("Y")
+figure, axes = plt.subplots(row, col, figsize=(10, 5))
+for i, ax in enumerate(axes):
+    if i < len(csvs):
+        ax.set_title(f"K={data[i]}")
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.scatter(csvs[i]['x'], csvs[i]['y'], c=csvs[i]['cluster'], cmap='rainbow', s=1)
 # Disminuir tamaño de puntos
-axes[0].scatter(k2['x'], k2['y'], c=k2['cluster'], cmap='rainbow', s=1)
-axes[1].scatter(k5['x'], k5['y'], c=k5['cluster'], cmap='rainbow', s=1)
+for i, ax in enumerate(axes):
+    if i < len(csvs):
+        ax.scatter(csvs[i]['x'], csvs[i]['y'], c=csvs[i]['cluster'], cmap='rainbow', s=1)
 plt.show()
 
 # Borrar ficheros temporales
-os.remove(dir_k2)
-os.remove(dir_k5)
+for dir in dirs:
+    os.remove(dir)
