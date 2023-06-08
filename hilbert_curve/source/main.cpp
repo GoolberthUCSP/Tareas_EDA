@@ -34,32 +34,26 @@ void print_python_end(){
     fprintf(out, "screen.exitonclick()\n"); // EXIT ON CLICK
 }
 
-void hilbert_curve(int n, int angle, std::stringstream& buffer) {
+// Función recursiva para generar la curva de Hilbert y escribir en el buffer
+void hilbert_curve(int n, int angle, stringstream& buffer) {
     if (n == 0) return;
     buffer << "turtle.right(" << angle << ")\n";
-
     hilbert_curve(n - 1, -angle, buffer);
-
     buffer << "turtle.forward(" << STEP_SZ << ")\n";
     buffer << "turtle.left(" << angle << ")\n";
-
     hilbert_curve(n - 1, angle, buffer);
-
     buffer << "turtle.forward(" << STEP_SZ << ")\n";
-
     hilbert_curve(n - 1, angle, buffer);
-
     buffer << "turtle.left(" << angle << ")\n";
     buffer << "turtle.forward(" << STEP_SZ << ")\n";
-
     hilbert_curve(n - 1, -angle, buffer);
-
     buffer << "turtle.right(" << angle << ")\n";
 }
 
+// Función para generar la curva de Hilbert paralelizada
 void hilbert_curve_parallel(int n, int angle) {
-    std::stringstream buffer;
-    std::stringstream buffers[4];
+    stringstream buffer;
+    stringstream buffers[4];
     int angles[4] = {-angle, angle, angle, -angle};
     buffers[0] << "turtle.right(" << angle << ")\n";
     buffers[1] << "turtle.forward(" << STEP_SZ << ")\n";
@@ -67,13 +61,15 @@ void hilbert_curve_parallel(int n, int angle) {
     buffers[2] << "turtle.forward(" << STEP_SZ << ")\n";
     buffers[3] << "turtle.left(" << angle << ")\n";
     buffers[3] << "turtle.forward(" << STEP_SZ << ")\n";
-    #pragma omp parallel for
+    //Paralelización del for
+    #pragma omp parallel for 
     for (int i = 0; i < 4; ++i) {
         hilbert_curve(n - 1, angles[i], buffers[i]);
         #pragma omp critical
         buffer << buffers[i].str();
     }
     buffer << "turtle.right(" << angle << ")\n";
+    // Unión de soluciones parciales
     fprintf(out, "%s\n", buffer.str().c_str());
 }
 
@@ -81,7 +77,7 @@ int main(int argc, char const *argv[]) {
     out = fopen("hilbert_turtle.py", "w+");
     print_python_head();
 
-    int order = 7;
+    int order = 5;
     int angle = 90;
 
     hilbert_curve_parallel(order, angle);
