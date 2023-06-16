@@ -5,6 +5,7 @@ import sys
 
 fig = plt.figure()
 ax = plt.axes(projection='3d')
+fig.set_size_inches(10, 10)
 
 # Leer puntos en 3D desde points.csv
 df = pd.read_csv(sys.path[0]+'\\points.csv', header=None)

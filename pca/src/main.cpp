@@ -1,5 +1,6 @@
 #include <iostream>
 #include "eigen\Dense"
+//#include <Eigen\Dense>
 #include <vector>
 #include <cmath>
 #include <fstream>
@@ -47,8 +48,10 @@ void getMaxEigenvect(vector<Point> &points, Point &eigenvect){
     matrix.rowwise() -= mean.transpose();
     //Calcular la matriz de covarianza
     Eigen::MatrixXf cov = matrix.transpose() * matrix;
+    //Calcular los autovectores
     Eigen::EigenSolver<Eigen::MatrixXf> es(cov);
     Eigen::MatrixXf eigenvects = es.eigenvectors().real();
+    //Obtener el autovector con mayor autovalor
     Eigen::VectorXf maxEigenvect = eigenvects.col(0);
     eigenvect.x = maxEigenvect(0);
     eigenvect.y = maxEigenvect(1);
