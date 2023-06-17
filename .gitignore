@@ -15,6 +15,7 @@
 
 data.bin
 main.exe
+points.bin
 
 # Mono auto generated files
 mono_crash.*
