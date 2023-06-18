@@ -12,10 +12,10 @@
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
+*.exe
+*.bin
+*.csv
 
-data.bin
-main.exe
-points.bin
 
 # Mono auto generated files
 mono_crash.*
