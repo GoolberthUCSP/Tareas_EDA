@@ -41,7 +41,7 @@ struct linkedList
         }
         this->size++;
     }
-    void delete_first(){
+    void pop_front(){
         if (this->head != NULL){
             node *temp = this->head;
             this->head = this->head->next;
@@ -51,77 +51,77 @@ struct linkedList
     }
     void kick_back(int key){
         //Si el elemento está en la cola, no se hace nada
+        if (this->tail->key == key) return;
         //Si no, se mueve el elemento a la cola
-        if (this->tail->key != key){
-            node *temp = this->head;
-            while (temp->next->key != key){
-                temp = temp->next;
-            }
-            node *temp2 = temp->next;
-            temp->next = temp->next->next;
-            temp2->next = NULL;
-            this->tail->next = temp2;
-            this->tail = temp2;
+        node *temp = this->head;
+        while (temp->next->key != key){
+            temp = temp->next;
         }
+        node *temp2 = temp->next;
+        temp->next = temp->next->next;
+        temp2->next = NULL;
+        this->tail->next = temp2;
+        this->tail = temp2;
     }
 };
 
-struct cache
+struct Cache
 {
     //map <valor, indice> de los valores almacenados en la cache
     //Controlador de la existencia de los elementos en la cache
-    unordered_map<int, int> m;
+    unordered_map<int, int> map_cache;
     //Controlador del orden de los elementos en la cache
-    linkedList l;
+    linkedList list_cache;
     int max_capacity;
     int size;
     //Constructor
-    cache(int max_capacity= CACHE_SIZE){
+    Cache(int max_capacity= CACHE_SIZE){
         this->max_capacity = max_capacity;
         this->size = 0;
     }
     void insert(int key, int index){
         //Si el elemento no está en la cache
-        if (this->m.find(key) == this->m.end()){
+        if (this->map_cache.find(key) == this->map_cache.end()){
             //Si la cache está llena
             if (this->size == this->max_capacity){
+                //Se obtiene la clave del primer elemento de la lista
+                int to_delete = this->list_cache.head->key;
                 //Se elimina el primer elemento de la lista
-                this->l.delete_first();
-                //Se elimina el primer elemento del mapa
-                this->m.erase(this->m.find(this->l.head->key));
+                this->list_cache.pop_front();
+                //Se elimina el elemento que fue eliminado de la lista del mapa
+                this->map_cache.erase(to_delete);
                 //Se inserta el nuevo elemento en la lista
-                this->l.push_back(key);
+                this->list_cache.push_back(key);
                 //Se inserta el nuevo elemento en el mapa
-                this->m.insert(pair<int, int>(key, index));
+                this->map_cache.insert(pair<int, int>(key, index));
             }
             //Si la cache no está llena
             else{
                 //Se inserta el nuevo elemento en la lista
-                this->l.push_back(key);
+                this->list_cache.push_back(key);
                 //Se inserta el nuevo elemento en el mapa
-                this->m.insert(pair<int, int>(key, index));
+                this->map_cache.insert(pair<int, int>(key, index));
                 this->size++;
             }
         }
         //Si el elemento está en la cache
         else{
             //Se mueve el elemento a la cola
-            this->l.kick_back(key);
+            this->list_cache.kick_back(key);
         }
     }
     int search(int key){
         //Si el elemento está en la cache
-        if (this->m.find(key) != this->m.end()){
+        if (this->map_cache.find(key) != this->map_cache.end()){
             //Se mueve el elemento a la cola
-            this->l.kick_back(key);
-            return this->m.find(key)->second;
+            this->list_cache.kick_back(key);
+            return this->map_cache.find(key)->second;
         }
         //Si el elemento no está en la cache
         else{
             return -1;
         }
     }
-    
 };
 
 #endif //CACHE_H
