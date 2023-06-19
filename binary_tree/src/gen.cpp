@@ -6,7 +6,7 @@
 
 #define SIZE 100000000 //Tamaño del vector
 #define N_POINTS 50000000 //Número de puntos
-#define MX_INT 2000000000 //Máximo entero
+#define MAX_INT 2000000000 //Máximo entero
 #define OUTPUT "points.bin" //Nombre del fichero
 
 using namespace std;
@@ -20,10 +20,10 @@ void genPoints(vector<int> &v, int n){
     //Los puntos no se repetirán
     set<int> s;
     int x= 1, n_ranges= 10000;
-    int min = 1, max= MX_INT/n_ranges, step = MX_INT/n_ranges;
+    int min = 1, max= MAX_INT/n_ranges, step = MAX_INT/n_ranges;
     int step_n = n/n_ranges;
     while (s.size() < n){
-        //Insertar en n_ranges rangos para evitar colisiones
+        //Insertar en rangos para evitar colisiones
         if (s.size() >= step_n*x){
             min = max+1;
             max += step;

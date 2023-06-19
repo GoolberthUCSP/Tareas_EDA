@@ -11,15 +11,14 @@
 #include <mutex>
 #include "cache.h"
 
-#define FILENAME "target.bin"
-#define SIZE 100000000 //Tamaño máximo de enteros a almacenar
+#define FILENAME "data.bin"
+#define MAX_SIZE 100000000 //Tamaño máximo de enteros a almacenar
 
 using namespace std;
 
 /*
-Se implementará un árbol binario de búsqueda para almacenar los datos de los registros
-El árbol debe ser persistente, por lo tanto se usará un fichero .bin para almacenar los datos
-
+Se implementará un árbol binario de búsqueda para almacenar números enteros
+El árbol será persistente, por lo tanto se usará un fichero .bin para almacenar los datos
 */
 class bin_tree{
     fstream file;
@@ -31,11 +30,11 @@ public:
     bin_tree(){
         //Fichero de entrada y salida
         file.open(FILENAME, ios::binary | ios::in | ios::out);
-        //Si no existe el fichero, se crea y se inicializa con SIZE ceros
+        //Si no existe el fichero, se crea y se inicializa con MAX_SIZE ceros
         if (!file.is_open()){
             file.open(FILENAME, ios::binary | ios::out);
             int zero = 0;
-            for (int i=0; i<SIZE; i++){
+            for (int i=0; i<MAX_SIZE; i++){
                 file.write((char*)&zero, sizeof(int));
             }
             file.close();
@@ -44,7 +43,6 @@ public:
     }
     ~bin_tree(){
         file.close();
-        delete &cache;
     }
     
     bool insert(int target){
@@ -60,7 +58,7 @@ public:
     int insert_in_file(int target, int index){
         //Retorna el índice del registro que fue insertado
         //Insertar en el fichero
-        assert(index >= 0 && index < SIZE);
+        assert(index >= 0 && index < MAX_SIZE);
         read(index);
         //Si se llega a un nodo inexistente
         if (!(*rd_ptr)){ 
@@ -81,10 +79,11 @@ public:
         }
     }
 
-    //left=2*N+1 right=2*N+2
+    //Buscar si un valor está en el árbol
+    //Devuelve el índice del registro que contiene el valor buscado o -1 si no se encontró
     int search(int target){
         //Buscar en la caché
-        int index = cache.search(target);
+        int index = cache.get(target);
         //Si no se encuentra en la caché, buscar en el fichero
         if (index == -1){
             index= search_in_file(target, 0);
@@ -98,7 +97,7 @@ public:
 
     int search_in_file(int target, int index){
         //Retorna el índice del registro que contiene el valor target
-        assert(index >= 0 && index < SIZE);
+        assert(index >= 0 && index < MAX_SIZE);
         read(index);
         //Si se llega a un nodo inexistente
         if (!(*rd_ptr)){ 
