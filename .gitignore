@@ -15,6 +15,7 @@
 *.exe
 *.bin
 *.csv
+main
 
 
 # Mono auto generated files

@@ -7,7 +7,6 @@
 #include <cmath>
 #include <fstream>
 #include <string>
-#include <cassert>
 #include <mutex>
 #include "cache.h"
 
@@ -25,7 +24,7 @@ class bin_tree{
     //Puntero que recorrerá el fichero
     int *rd_ptr; //Puntero de lectura
     Cache cache;
-    mutex mtx;
+    //mutex mtx;
 public:
     bin_tree(){
         //Fichero de entrada y salida
@@ -58,7 +57,7 @@ public:
     int insert_in_file(int target, int index){
         //Retorna el índice del registro que fue insertado
         //Insertar en el fichero
-        assert(index >= 0 && index < MAX_SIZE);
+        if (index < 0 || index >= MAX_SIZE) return -1;
         read(index);
         //Si se llega a un nodo inexistente
         if (!(*rd_ptr)){ 
@@ -97,7 +96,7 @@ public:
 
     int search_in_file(int target, int index){
         //Retorna el índice del registro que contiene el valor target
-        assert(index >= 0 && index < MAX_SIZE);
+        if (index < 0 || index >= MAX_SIZE) return -1;
         read(index);
         //Si se llega a un nodo inexistente
         if (!(*rd_ptr)){ 
@@ -118,21 +117,21 @@ public:
 
     void read(int index){
         //Leer el valor del registro index en el fichero
-        mtx.lock();
+        //mtx.lock();
         //Mover el puntero de lectura al registro index
         file.seekg(sizeof(int)*index, ios::beg);
         //Leer el valor del registro
         file.read((char*)rd_ptr, sizeof(int));
-        mtx.unlock();
+        //mtx.unlock();
     }
     void write(int index){
         //Escribir el valor del registro index en el fichero
-        mtx.lock();
+        //mtx.lock();
         //Mover el puntero de escritura al registro index
         file.seekp(sizeof(int)*index, ios::beg);
         //Escribir el valor en el registro
         file.write((char*)rd_ptr, sizeof(int));
-        mtx.unlock();
+        //mtx.unlock();
     }
 };
 

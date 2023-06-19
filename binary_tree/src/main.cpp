@@ -13,11 +13,14 @@ using namespace std;
 int main(){
     srand(time(NULL));
     bin_tree tree;
-    int rand_num;
+    int rand_num, index;
 
-    for (int i=0; i<10; i++){
+    for (int i=0; i<MAX_INT; i++){
         rand_num = rand()%MAX_INT + 1;
-        tree.search(rand_num);
+        index= tree.search(rand_num);
+        if (index != -1){
+            cout << "El número " << rand_num << "\tse encuentra en el índice " << index << endl;
+        }
     } 
 
     //Para insertar los datos en el árbol
