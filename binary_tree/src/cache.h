@@ -81,7 +81,8 @@ struct Cache
     unordered_map<int, node*> map_;
     dlist list_;
     int max_size;
-    Cache(int max_size_= CACHE_SIZE) : max_size(max_size_), map_(), list_() {}
+    
+    Cache(int max_size_= CACHE_SIZE) : max_size(max_size_) {}
     ~Cache(){
         map_.clear();
     }

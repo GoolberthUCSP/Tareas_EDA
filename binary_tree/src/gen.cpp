@@ -15,7 +15,7 @@ int randrange(int min, int max){
     return rand()%(max-min+1)+min;
 }
 
-void genPoints(vector<int> &v, int n){
+void genPoints(int *arr, int n= N_POINTS){
     //Genera n puntos random entre 0 y 2000M
     //Los puntos no se repetirán
     set<int> s;
@@ -33,37 +33,45 @@ void genPoints(vector<int> &v, int n){
     }
     int i = 0;
     for (auto it = s.begin(); it != s.end(); it++){
-        v[i++] = *it;
+        arr[i++] = *it;
     }
 }
 
-//Se guardarán los datos del vector en un fichero .bin
-void savePoints(vector<int> &v){
+//Se guardarán los datos del array en un fichero .bin
+void savePoints(int *arr, int n= N_POINTS){
     //Guardar 100M de enteros en un fichero .bin
     ofstream file;
     file.open(OUTPUT, ios::binary);
     if(!file.is_open()){
         cout << "Error al abrir el fichero" << endl;
     }
-    for(int i=0; i<v.size(); i++){
-        file.write((char*)&v[i], sizeof(int));
-    }
+    file.write((char*)arr, sizeof(int)*n);
     file.close();
 }
 
 int main(){
+
     srand(time(NULL));
     Node *avl_tree= NULL;
     //Vector de 100M de enteros
-    vector<int> v;
-    v.assign(SIZE, 0);
-    genPoints(v, N_POINTS);
+    int *arr = new int[SIZE];
+    genPoints(arr);
     for (int i = 0; i < N_POINTS; i++){
-        avl_tree = insertNode(avl_tree, v[i]);
+        avl_tree = insertNode(avl_tree, arr[i]);
     }
     vector<int> keys = getTreeKeys(avl_tree);
     for (int i = 0; i < keys.size(); i++){
-        v[i] = keys[i];
+        arr[i] = keys[i];
     }
-    savePoints(v);
+    savePoints(arr);
+    delete[] arr;
+
+    //DEBUG
+    // ifstream file;
+    // file.open(OUTPUT, ios::binary);
+    // int data[50];
+    // file.read((char*)data, sizeof(int)*50);
+    // for (int i = 0; i < 50; i++){
+    //     cout << data[i] << ' ';
+    // }
 }

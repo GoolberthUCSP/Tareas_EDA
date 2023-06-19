@@ -3,15 +3,14 @@
 
 #include <iostream>
 #include <vector>
-#include <algorithm>
-#include <cmath>
 #include <fstream>
 #include <string>
-#include <mutex>
+//#include <mutex>
 #include "cache.h"
 
 #define FILENAME "data.bin"
 #define MAX_SIZE 100000000 //Tamaño máximo de enteros a almacenar
+#define FLAGS std::ios::in | std::ios::out | std::ios::binary | std::ios::app
 
 using namespace std;
 
@@ -27,17 +26,21 @@ class bin_tree{
     //mutex mtx;
 public:
     bin_tree(){
+        cout << "Inicializando árbol binario..." << endl;
         //Fichero de entrada y salida
-        file.open(FILENAME, ios::binary | ios::in | ios::out);
+        file.open(FILENAME, FLAGS);
         //Si no existe el fichero, se crea y se inicializa con MAX_SIZE ceros
         if (!file.is_open()){
-            file.open(FILENAME, ios::binary | ios::out);
-            int zero = 0;
-            for (int i=0; i<MAX_SIZE; i++){
-                file.write((char*)&zero, sizeof(int));
-            }
+            //Crear fichero
             file.close();
-            file.open(FILENAME, ios::binary | ios::in | ios::out);
+            file.open(FILENAME, std::ios::binary | std::ios::out);
+            file.close();
+            //Inicializar fichero
+            file.open(FILENAME, FLAGS);
+                int zero[10000]{0};
+                for (int i = 0; i < MAX_SIZE/10000; i++){
+                    file.write((char*)zero, sizeof(int)*10000);
+                }
         }
     }
     ~bin_tree(){
@@ -113,6 +116,18 @@ public:
         else{
             return search_in_file(target, 2*index+2);
         }
+    }
+
+    int* read_by_range(int min, int max){
+        //Devuelve un array con los valores del árbol que están en el rango [min, max]
+        int *arr = new int[max-min+1];
+        read_by_range_in_file(min, max, arr);
+        return arr;
+    }
+    void read_by_range_in_file(int min, int max, int *arr){
+        //Leer los valores del árbol que están en el rango [min, max]
+        file.seekg(sizeof(int)*min, ios::beg);
+        file.read((char*)arr, sizeof(int)*(max-min+1));
     }
 
     void read(int index){
