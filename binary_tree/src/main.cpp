@@ -14,23 +14,6 @@
 int main(){
 
     bin_tree tree;
-    
-    // srand(time(NULL));
-    // int rand_num, index;
-    // int range = 10;
-    // int *arr= new int[range]{0};
-    // tree.read_by_range(0, range, arr);
-    // for (int i=0; i<range; i++){
-    //     cout << arr[i] << ' ';
-    // }
-    // cout << endl;
-    // for (int i=0; i<N_POINTS/100; i++){
-    //     rand_num = rand()%MAX_INT + 1;
-    //     index= tree.search(rand_num);
-    //     if (index != -1){
-    //         cout << "El número " << rand_num << "\tse encuentra en el índice " << index << endl;
-    //     }
-    // }
 
     fstream file;
     file.open(INPUT, ios::binary | ios::in);
@@ -45,7 +28,13 @@ int main(){
         for (int j=0; j<BLOCK_SIZE; j++){
             tree.insert(data[j]);
         }
-        cout << data[0] << ' ' << data[BLOCK_SIZE-1] << endl;
     }
     file.close();
+
+    // int read[20];
+    // tree.read_list(0, 20, read);
+    // for (int i=0; i<20; i++){
+    //     cout << read[i] << " ";
+    // }
+
 }
