@@ -16,29 +16,31 @@ int main(){
     srand(time(NULL));
     bin_tree tree;
     //Paralelo
-    auto start = std::chrono::high_resolution_clock::now();
-    int n_threads = thread::hardware_concurrency();
-    vector<thread> threads;
-    for (int i = 0; i < n_threads; i++){
-        threads.push_back(thread([&tree, n_threads](){
-            for (int i = 0; i < N_POINTS/n_threads; i++){
-                //Insertar o buscar aleatoriamente
-                if (rand() % 2 == 0){
-                    //Insertar
-                    tree.insert(rand() % MAX_INT);
-                }else{
-                    //Buscar
-                    tree.search(rand() % MAX_INT);
-                }
-            }
-        }));
-    }
-    for (auto& th : threads){
-        th.join();
-    }
-    auto end = std::chrono::high_resolution_clock::now();
-    cout << "PARALELO::Tiempo de ejecución: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << endl;
-    cout << "DONE" << endl;
+    // auto start = std::chrono::high_resolution_clock::now();
+    // int n_threads = thread::hardware_concurrency();
+    // vector<thread> threads;
+    // for (int i = 0; i < n_threads; i++){
+    //     threads.push_back(thread([&tree, n_threads](){
+    //         for (int i = 0; i < N_POINTS/n_threads; i++){
+    //             //Insertar o buscar aleatoriamente
+    //             if (rand() % 2 == 0){
+    //                 //Insertar
+    //                 tree.insert(rand() % MAX_INT);
+    //             }else{
+    //                 //Buscar
+    //                 tree.search(rand() % MAX_INT);
+    //             }
+    //         }
+    //     }));
+    // }
+    // for (auto& th : threads){
+    //     th.join();
+    // }
+    // auto end = std::chrono::high_resolution_clock::now();
+    // cout << "PARALELO::Tiempo de ejecución: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << endl;
+    // cout << "DONE" << endl;
+
+
     // //Secuencial
     // auto start = std::chrono::high_resolution_clock::now();
     // for (int i = 0; i < N_POINTS; i++){
