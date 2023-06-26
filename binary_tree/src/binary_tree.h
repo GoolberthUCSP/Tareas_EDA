@@ -5,7 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
-//#include <mutex>
+#include <mutex>
 #include "cache.h"
 
 #define FILENAME "data.bin"
@@ -24,6 +24,8 @@ private:
     fstream file;
     //Memoria caché para los valores más buscados
     Cache cache;
+    //Bloquear el acceso de lectura y escritura al fichero
+    mutex rd_mtx, wr_mtx;
 public:
     bin_tree(){
         //Fichero de entrada y salida
@@ -48,15 +50,15 @@ public:
     
     bool insert(int target, int index=0){
         //Insertar un valor en el árbol
-        // if (search(target) != -1){ //Si el valor ya está en el árbol
-        //     return false;
-        // }
+        if (search(target) != -1){ //Si el valor ya está en el árbol
+            return false;
+        }
         if (index >= MAX_SIZE) return false;
         //Insertar en el fichero
         int rd_int= read(index);
         //Si se llega a un nodo inexistente = 0
         if (rd_int == 0){
-            //cache.insert(target, index);
+            cache.insert(target, index);
             write(target, index);
             return true;
         }
@@ -131,20 +133,18 @@ public:
 
     int read(int index){
         //Leer el valor del registro index en el fichero
+        lock_guard<mutex> lock(rd_mtx);
         int rd_int;
-        //mtx.lock();
         file.seekg(sizeof(int)*index, ios::beg);
         file.read((char*)&rd_int, sizeof(int));
-        //mtx.unlock();
         return rd_int;
     }
 
     void write(int &target, int index){
-        //Escribir el valor del registro index en el fichero
-        //mtx.lock();
+        //Escribir el valor del entero target en el registro index del fichero
+        lock_guard<mutex> lock(wr_mtx);
         file.seekp(sizeof(int)*index, ios::beg);
         file.write((char*)&target, sizeof(int));
-        //mtx.unlock();
     }
 };
 
