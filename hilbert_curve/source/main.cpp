@@ -13,7 +13,7 @@ omp_lock_t lock;
 #define STEP_SZ 10
 #define H_WINDOWS 800
 #define W_WINDOWS 800
-#define SPEED 1  // check https://docs.python.org/3/library/turtle.html#turtle.speed
+#define SPEED 0  // check https://docs.python.org/3/library/turtle.html#turtle.speed
 
 FILE *out;
 
@@ -24,7 +24,6 @@ void print_python_head(){
     fprintf(out,"turtle.pendown()\n");
     fprintf(out,"turtle.setup(%d, %d)\n", H_WINDOWS, W_WINDOWS);
     fprintf(out, "turtle.speed(%d)\n", SPEED);
-	fprintf(out, "turtle.tracer(0)\n");
 }
 
 void print_python_end(){
@@ -76,7 +75,9 @@ int main(int argc, char const *argv[]) {
     out = fopen("hilbert_turtle.py", "w+");
     print_python_head();
 
-    int order = 5;
+    int order;
+    cout << "Ingrese el orden de la curva de Hilbert: ";
+    cin >> order;
     int angle = 90;
 
     hilbert_curve_parallel(order, angle);
