@@ -2,11 +2,7 @@
 #define AVL_TREE_H
 
 // AVL tree implementation in C++
-
 #include <iostream>
-#include <vector>
-#include <queue>
-using namespace std;
 
 class Node {
    public:
@@ -173,25 +169,6 @@ Node *deleteNode(Node *root, int key) {
     }
   }
   return root;
-}
-
-// Return vector of tree keys in order (amplitud)
-vector<int> getTreeKeys(Node *root) {
-  vector<int> keys;
-  if (root == NULL)
-    return keys;
-  queue<Node *> q;
-  q.push(root);
-  while (!q.empty()) {
-    Node *node = q.front();
-    q.pop();
-    keys.push_back(node->key);
-    if (node->left != NULL)
-      q.push(node->left);
-    if (node->right != NULL)
-      q.push(node->right);
-  }
-  return keys;
 }
 
 #endif //AVL_TREE_H

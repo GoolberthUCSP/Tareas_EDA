@@ -3,49 +3,58 @@
 #include <thread>
 #include <random>
 #include <ctime>
+#include <chrono>
+#include <vector>
 #include "binary_tree.h"
-#define INPUT "points.bin" //Para insertar los datos en el árbol
-#define N_POINTS 50000000
+#define N_POINTS 10000
 #define MAX_INT 2000000000 //Máximo entero
 #define BLOCK_SIZE 10000 //Tamaño del bloque de lectura
 
 #define cout std::cout
 
 int main(){
-
+    srand(time(NULL));
     bin_tree tree;
     
-    // srand(time(NULL));
-    // int rand_num, index;
-    // int range = 10;
-    // int *arr= new int[range]{0};
-    // tree.read_by_range(0, range, arr);
-    // for (int i=0; i<range; i++){
-    //     cout << arr[i] << ' ';
+    // //Paralelo
+    // auto start = std::chrono::high_resolution_clock::now();
+    // int n_threads = thread::hardware_concurrency();
+    // vector<thread> threads;
+    // for (int i = 0; i < n_threads; i++){
+    //     threads.push_back(thread([&tree, n_threads](){
+    //         for (int i = 0; i < N_POINTS/n_threads; i++){
+    //             //Insertar o buscar aleatoriamente
+    //             if (rand() % 2 == 0){
+    //                 //Insertar
+    //                 tree.insert(rand() % MAX_INT);
+    //             }else{
+    //                 //Buscar
+    //                 tree.search(rand() % MAX_INT);
+    //             }
+    //         }
+    //     }));
     // }
-    // cout << endl;
-    // for (int i=0; i<N_POINTS/100; i++){
-    //     rand_num = rand()%MAX_INT + 1;
-    //     index= tree.search(rand_num);
-    //     if (index != -1){
-    //         cout << "El número " << rand_num << "\tse encuentra en el índice " << index << endl;
-    //     }
+    // for (auto& th : threads){
+    //     th.join();
     // }
+    // auto end = std::chrono::high_resolution_clock::now();
+    // cout << "PARALELO::Tiempo de ejecución: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << endl;
 
-    fstream file;
-    file.open(INPUT, ios::binary | ios::in);
-    if(!file.is_open()){
-        cout << "Error al abrir el fichero" << endl;
-    }
-    //Insertar los datos en el árbol
-    int data[BLOCK_SIZE];
-    for (int i=0; i<N_POINTS/BLOCK_SIZE; i++){
-        file.seekg(i*BLOCK_SIZE*sizeof(int), ios::beg);
-        file.read((char*)data, sizeof(int)*BLOCK_SIZE);
-        for (int j=0; j<BLOCK_SIZE; j++){
-            tree.insert(data[j]);
+
+    //Secuencial
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < N_POINTS; i++){
+        //Insertar o buscar aleatoriamente
+        if (rand() % 2 == 0){
+            //Insertar
+            tree.insert(rand() % MAX_INT);
+        }else{
+            //Buscar
+            tree.search(rand() % MAX_INT);
         }
-        cout << data[0] << ' ' << data[BLOCK_SIZE-1] << endl;
     }
-    file.close();
+    auto end = std::chrono::high_resolution_clock::now();
+    cout << "SECUENCIAL::Tiempo de ejecución: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << endl;
+
+
 }
